@@ -34,6 +34,8 @@ const char *password = "monthunion197";  // Enter WiFi password
 const char *mqtt_broker = "192.168.1.63";
 const char *topic1 = "esp32/LEDS/1";
 const char *topic2 = "esp32/LEDS/2";
+const char *returnTopic = "esp32/password";
+const char *returnState = "esp32/lightstate";
 const char *mqtt_username = "emqx";
 const char *mqtt_password = "123456789";
 const int mqtt_port = 1883;
@@ -42,7 +44,16 @@ const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+// LED Pins
+const int LEDOne = 19;
+const int LEDTwo = 2;
+
+int returnTopicNum = 0;
+char str[2];
+
 void setup() {
+  pinMode(LEDOne, OUTPUT);
+  pinMode(LEDTwo, OUTPUT);
   Serial.begin(115200); // Initialize the serial port and set the baud rate to 115200
   Serial.println("ESP32 is ready!");  // Print the string "UNO is ready!"
   Wire.begin(SDA, SCL);           // attach the IIC pin
@@ -73,6 +84,8 @@ void setup() {
          delay(2000);
      }
   }
+  client.subscribe(topic1);
+  client.subscribe(topic2);
 }
 
 void callback(char *topic, byte *payload, unsigned int length) {
@@ -87,32 +100,52 @@ void callback(char *topic, byte *payload, unsigned int length) {
   
   // If a message is received on the topic esp32/LEDS/led1, you check if the message is either 1 or 0. Turns the ESP GPIO according to the message
   if(strcmp(topic, "esp32/LEDS/1") == 0){
-    Serial.print("Changing GPIO 2 to ");
+    Serial.print("Changing GPIO 19 to ");
     if((char)payload[0] == '1'){
-      //digitalWrite(LEDOne, HIGH);
+      digitalWrite(LEDOne, HIGH);
+      digitalWrite(LEDTwo, LOW);
+      lcd.clear();
+      lcd.print("Blue Password");
+      strcpy(pinNum, "1234");
+      returnTopicNum = 10;
       Serial.print("On");
     }
     else if((char) payload[0] == '0'){
-      //digitalWrite(LEDOne, LOW);
+      digitalWrite(LEDOne, LOW);
+      digitalWrite(LEDTwo, LOW);
+      lcd.clear();
+      lcd.print("default pass");
       Serial.print("Off");
+      strcpy(pinNum, "5555");
+      returnTopicNum = 0;
     }
   }
   if(strcmp(topic, "esp32/LEDS/2") == 0){
-    Serial.print("Changing GPIO 0 to ");
+    Serial.print("Changing GPIO 2 to ");
     if((char) payload[0] == '1'){
-      //digitalWrite(LEDTwo, HIGH);
+      digitalWrite(LEDTwo, HIGH);
+      digitalWrite(LEDOne, LOW);
+      lcd.clear();
+      lcd.print("Red Password");
+      strcpy(pinNum, "ABCD");
+      returnTopicNum = 20;
       Serial.print("On");
     }
     else if((char) payload[0] == '0'){
-      //digitalWrite(LEDTwo, LOW);
+      digitalWrite(LEDTwo, LOW);
+      digitalWrite(LEDOne, LOW);
+      lcd.clear();
+      lcd.print("default pass");
       Serial.print("Off");
+      strcpy(pinNum, "5555");
+      returnTopicNum = 0;
     }
   }
   Serial.println();
 }
 
 void loop() {
-  //client.loop();
+  client.loop();
   static char keyIn[4];     // Save the input character
   static byte keyInNum = 0; // Save the the number of input characters 
   // Get the character input
@@ -138,6 +171,10 @@ void loop() {
         lcd.setCursor(0,0);
         lcd.clear();
         lcd.print("password right!");
+        returnTopicNum += 1;
+        sprintf(str, "%d", returnTopicNum);
+        client.publish(returnTopic, str);
+        returnTopicNum -= 1;
       }
       else {                          // If the input password is wrong
         Serial.println("password wrong!");
@@ -145,6 +182,8 @@ void loop() {
         lcd.setCursor(0,0);
         lcd.clear();
         lcd.print("password wrong!");
+        sprintf(str, "%d", returnTopicNum);
+        client.publish(returnTopic, str);
       }
       keyInNum = 0; // Reset the number of the input characters to 0
     }

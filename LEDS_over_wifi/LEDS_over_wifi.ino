@@ -14,8 +14,8 @@ const char *mqtt_password = "123456789";
 const int mqtt_port = 1883;
 
 // LED Pins
-const int LEDOne = 2;
-const int LEDTwo = 4;
+const int LEDOne = 19;
+const int LEDTwo = 2;
 
 // initialize espClient
 WiFiClient espClient;
@@ -65,7 +65,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
   
   // If a message is received on the topic esp32/LEDS/led1, you check if the message is either 1 or 0. Turns the ESP GPIO according to the message
   if(strcmp(topic, "esp32/LEDS/1") == 0){
-    Serial.print("Changing GPIO 2 to ");
+    Serial.print("Changing GPIO 19 to ");
     if((char)payload[0] == '1'){
       digitalWrite(LEDOne, HIGH);
       Serial.print("On");
@@ -76,7 +76,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
     }
   }
   if(strcmp(topic, "esp32/LEDS/2") == 0){
-    Serial.print("Changing GPIO 0 to ");
+    Serial.print("Changing GPIO 2 to ");
     if((char) payload[0] == '1'){
       digitalWrite(LEDTwo, HIGH);
       Serial.print("On");
