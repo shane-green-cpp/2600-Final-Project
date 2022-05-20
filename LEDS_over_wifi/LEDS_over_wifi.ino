@@ -2,11 +2,11 @@
 #include <PubSubClient.h>
 
 // WiFi
-const char *ssid = "SpectrumSetup-9F"; // Enter your WiFi name
-const char *password = "monthunion197";  // Enter WiFi password
+const char *ssid = "YOUR WIFI NAME"; // Enter your WiFi name
+const char *password = "YOUR WIFI PASSWORD";  // Enter WiFi password
 
 // MQTT Broker
-const char *mqtt_broker = "192.168.1.63";
+const char *mqtt_broker = "YOUR LOCAL IP";
 const char *topic1 = "esp32/LEDS/1";
 const char *topic2 = "esp32/LEDS/2";
 const char *mqtt_username = "emqx";
